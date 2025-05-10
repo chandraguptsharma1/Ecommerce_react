@@ -2,13 +2,15 @@
 
 import './App.css'
 import LoginScreen from './Auth/LoginScreen'
+import Registration from './Auth/Registration'
 
 function App() {
   
 
   return (
     <>
-    <LoginScreen />
+      <Registration/>
+    {/* <LoginScreen /> */}
     </>
   )
 }

@@ -1,6 +1,5 @@
 import React, { Component } from 'react'
-import { toast, ToastContainer } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
+
 import Swal from 'sweetalert2';
 
 
@@ -82,7 +81,7 @@ export default class LoginScreen extends Component {
             </div>
 
             <div className="mt-12 flex flex-col items-center">
-              <h1 className="text-2xl xl:text-3xl font-extrabold">Sign up</h1>
+              <h1 className="text-2xl xl:text-3xl font-extrabold">Login</h1>
 
               <div className="w-full flex-1 mt-8">
                 
@@ -131,7 +130,7 @@ export default class LoginScreen extends Component {
                       <circle cx="8.5" cy="7" r="4" />
                       <path d="M20 8v6M23 11h-6" />
                     </svg>
-                    <span className="ml-3">Sign Up</span>
+                    <span className="ml-3">Login</span>
                   </button>
 
                   <p className="mt-6 text-xs text-gray-600 text-center">
