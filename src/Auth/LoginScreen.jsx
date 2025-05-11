@@ -1,81 +1,99 @@
-import React, { useState } from 'react'
-import axios from 'axios';
-import { useAuth } from './AuthContext';
-import Swal from 'sweetalert2';
+import React, { useState } from "react";
+import axios from "axios";
+import { useAuth } from "./AuthContext";
+import Swal from "sweetalert2";
+import { Navigate, useNavigate } from "react-router-dom";
 
-
-export default function LoginScreen () {
-
-  const [form,setForm] = useState({
-    email:'',
-    password:''
+export default function LoginScreen() {
+  const [form, setForm] = useState({
+    email: "",
+    password: "",
   });
 
-  const [error,setError] = useState({});
-  const {setUser} = useAuth();
+  const [error, setError] = useState({});
+  const { setUser } = useAuth();
+  const navigate = useNavigate();
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    
-    setForm((prev)=>({
-      ...prev,[name]:value
+
+    setForm((prev) => ({
+      ...prev,
+      [name]: value.trimStart(),
     }));
 
-    validateField(name,value);
+    validateField(name, value.trim());
   };
 
   const validateField = (field, value) => {
     const errors = { ...error };
 
-    if (field === 'email') {
+    if (field === "email") {
       if (!value.trim()) {
-        errors.email = 'Email is required';
+        errors.email = "Email is required";
       } else if (!/\S+@\S+\.\S+/.test(value)) {
-        errors.email = 'Email is invalid';
+        errors.email = "Email is invalid";
       } else {
         delete errors.email;
       }
     }
 
-    if (field === 'password') {
+    if (field === "password") {
       if (!value.trim()) {
-        errors.password = 'Password is required';
+        errors.password = "Password is required";
       } else if (value.length < 6) {
-        errors.password = 'Password must be at least 6 characters';
+        errors.password = "Password must be at least 6 characters";
       } else {
         delete errors.password;
       }
     }
 
-    setError({ errors });
+    setError(errors);
   };
 
   const handleLogin = async () => {
+    if (Object.keys(error).length === 0 && form.email && form.password) {
+      try {
+        const res = await axios.post(
+          "https://ecommerce-backend-6i0q.onrender.com/api/auth/login",
+          {
+            email: form.email,
+            password: form.password,
+          }
+        );
 
-    if(Object.keys(error).length===0 && form.email && form.password){
-      try{
-        const res= await axios.post('http://localhost:5001/api/login',form);
-        setUser(res.data.user || res.data);
+        console.log("Submitted Email:", form.email);
+        console.log("Submitted Password:", form.password);
+
+        const user = res.data.data.user;
+        console.log("User from API:", user);
+
+        setUser(user);
 
         Swal.fire({
-          icon: 'success',
-          title: 'Login Successful',
-          text: `Welcome, ${email}!`,
-          confirmButtonColor: '#3085d6',
+          icon: "success",
+          title: "Login Successful",
+          text: `Welcome, ${form.email}!`,
+          confirmButtonColor: "#3085d6",
+        }).then(() => {
+          navigate("/dashboard");
         });
-
-      }catch(err){
+      } catch (err) {
+        console.error("Login failed:", err); // full error log
         Swal.fire({
-          icon: 'error',
-          title: 'Login Failed',
-          text: err?.response?.data?.message || 'Invalid credentials'
+          icon: "error",
+          title: "Login Failed",
+          text:
+            err?.response?.data?.message ||
+            err?.message ||
+            "Something went wrong!",
         });
       }
     } else {
       Swal.fire({
-        icon: 'error',
-        title: 'Validation Failed',
-        text: 'Please fix the errors before continuing.'
+        icon: "error",
+        title: "Validation Failed",
+        text: "Please fix the errors before continuing.",
       });
     }
   };
@@ -86,7 +104,7 @@ export default function LoginScreen () {
         <div className="max-w-screen-xl m-0 sm:m-10 bg-white shadow sm:rounded-lg flex justify-center flex-1">
           <div className="lg:w-1/2 xl:w-5/12 p-6 sm:p-12">
             <div>
-              <div className='text-2xl font-bold text-blue-400'>Ecommerce</div>
+              <div className="text-2xl font-bold text-blue-400">Ecommerce</div>
             </div>
 
             <div className="mt-12 flex flex-col items-center">
@@ -115,7 +133,9 @@ export default function LoginScreen () {
                     className="w-full px-8 py-4 rounded-lg bg-gray-100 border border-gray-200 placeholder-gray-500 text-sm mt-5 focus:outline-none focus:border-gray-400 focus:bg-white"
                   />
                   {error.password && (
-                    <p className="text-red-500 text-xs mt-1">{error.password}</p>
+                    <p className="text-red-500 text-xs mt-1">
+                      {error.password}
+                    </p>
                   )}
 
                   <button
@@ -138,12 +158,18 @@ export default function LoginScreen () {
                   </button>
 
                   <p className="mt-6 text-xs text-gray-600 text-center">
-                    I agree to abide by templatana's{' '}
-                    <a href="#" className="border-b border-gray-500 border-dotted">
+                    I agree to abide by templatana's{" "}
+                    <a
+                      href="#"
+                      className="border-b border-gray-500 border-dotted"
+                    >
                       Terms of Service
-                    </a>{' '}
-                    and its{' '}
-                    <a href="#" className="border-b border-gray-500 border-dotted">
+                    </a>{" "}
+                    and its{" "}
+                    <a
+                      href="#"
+                      className="border-b border-gray-500 border-dotted"
+                    >
                       Privacy Policy
                     </a>
                   </p>
@@ -157,7 +183,7 @@ export default function LoginScreen () {
               className="m-12 xl:m-16 w-full bg-contain bg-center bg-no-repeat"
               style={{
                 backgroundImage:
-                  "url('https://storage.googleapis.com/devitary-image-host.appspot.com/15848031292911696601-undraw_designer_life_w96d.svg')"
+                  "url('https://storage.googleapis.com/devitary-image-host.appspot.com/15848031292911696601-undraw_designer_life_w96d.svg')",
               }}
             />
           </div>

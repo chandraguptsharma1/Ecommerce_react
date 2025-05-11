@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import Swal from "sweetalert2";
 import axios from "axios";
 import { useAuth } from "./AuthContext";
+import { useNavigate } from "react-router-dom";
 
 export default function Registration() {
   const [form, setForm] = useState({
@@ -11,6 +12,7 @@ export default function Registration() {
   });
   const [error, setError] = useState({});
   const { setUser } = useAuth();
+  const navigate = useNavigate();
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -67,18 +69,30 @@ export default function Registration() {
           { headers: { "Content-Type": "application/json" } }
         );
 
-        console.log("Post req", res);
-        setUser(res.data.user || res.data);
+        const user = res.data.data.user;
+        console.log("User from API:", user);
+
+        setUser(user);
+
         Swal.fire({
           icon: "success",
           title: "Registration Successful",
           text: `Welcome, ${form.email}`,
+        }).then(() => {
+          navigate("/login");
         });
       } catch (err) {
+        console.error(
+          "Registration error:",
+          err?.message || err.response?.data
+        );
         Swal.fire({
           icon: "error",
           title: "Registration Failed",
-          text: err?.response?.data?.message || "Something went wrong!",
+          text:
+            err?.response?.data?.message ||
+            JSON.stringify(err?.response?.data) ||
+            "Something went wrong!",
         });
       }
     } else {
