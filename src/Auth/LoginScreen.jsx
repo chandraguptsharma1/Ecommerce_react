@@ -1,98 +1,104 @@
-import React, { Component } from 'react'
-
+import React, { useState } from 'react'
+import axios from 'axios';
+import { useAuth } from './AuthContext';
 import Swal from 'sweetalert2';
 
 
-export default class LoginScreen extends Component {
+export default function LoginScreen () {
 
-  constructor(props) {
-    super(props);
-    this.state = {
-      email: '',
-      password: '',
-      error: {}
-    };
-  }
+  const [form,setForm] = useState({
+    email:'',
+    password:''
+  });
 
-  handleChange = (e) => {
+  const [error,setError] = useState({});
+  const {setUser} = useAuth();
+
+  const handleChange = (e) => {
     const { name, value } = e.target;
-    this.setState(
-      { [name]: value },
-      () => this.validateField(name, value) // validate after setting value
-    );
+    
+    setForm((prev)=>({
+      ...prev,[name]:value
+    }));
+
+    validateField(name,value);
   };
 
-  validateField = (field, value) => {
-    const error = { ...this.state.error };
+  const validateField = (field, value) => {
+    const errors = { ...error };
 
     if (field === 'email') {
       if (!value.trim()) {
-        error.email = 'Email is required';
+        errors.email = 'Email is required';
       } else if (!/\S+@\S+\.\S+/.test(value)) {
-        error.email = 'Email is invalid';
+        errors.email = 'Email is invalid';
       } else {
-        delete error.email;
+        delete errors.email;
       }
     }
 
     if (field === 'password') {
       if (!value.trim()) {
-        error.password = 'Password is required';
+        errors.password = 'Password is required';
       } else if (value.length < 6) {
-        error.password = 'Password must be at least 6 characters';
+        errors.password = 'Password must be at least 6 characters';
       } else {
-        delete error.password;
+        delete errors.password;
       }
     }
 
-    this.setState({ error });
+    setError({ errors });
   };
 
-  handleLogin = () => {
-    const { email, password, error } = this.state;
-    if (Object.keys(error).length === 0 && email && password) {
-      Swal.fire({
-        icon: 'success',
-        title: 'Login Successful',
-        text: `Welcome, ${email}!`,
-        confirmButtonColor: '#3085d6',
-      });
+  const handleLogin = async () => {
+
+    if(Object.keys(error).length===0 && form.email && form.password){
+      try{
+        const res= await axios.post('http://localhost:5001/api/login',form);
+        setUser(res.data.user || res.data);
+
+        Swal.fire({
+          icon: 'success',
+          title: 'Login Successful',
+          text: `Welcome, ${email}!`,
+          confirmButtonColor: '#3085d6',
+        });
+
+      }catch(err){
+        Swal.fire({
+          icon: 'error',
+          title: 'Login Failed',
+          text: err?.response?.data?.message || 'Invalid credentials'
+        });
+      }
     } else {
       Swal.fire({
         icon: 'error',
         title: 'Validation Failed',
-        text: 'Please fix the errors before continuing.',
-        confirmButtonColor: '#d33',
+        text: 'Please fix the errors before continuing.'
       });
     }
   };
 
-
-  render() {
-    const { email, password, error } = this.state;
-    return (
-      <>
-         <ToastContainer />
-        <div className="min-h-screen bg-gray-100 text-gray-900 flex justify-center">
+  return (
+    <>
+      <div className="min-h-screen bg-gray-100 text-gray-900 flex justify-center">
         <div className="max-w-screen-xl m-0 sm:m-10 bg-white shadow sm:rounded-lg flex justify-center flex-1">
           <div className="lg:w-1/2 xl:w-5/12 p-6 sm:p-12">
             <div>
-               <div className='text-2xl font-bold text-blue-400'>Ecommerce</div>
+              <div className='text-2xl font-bold text-blue-400'>Ecommerce</div>
             </div>
 
             <div className="mt-12 flex flex-col items-center">
               <h1 className="text-2xl xl:text-3xl font-extrabold">Login</h1>
 
               <div className="w-full flex-1 mt-8">
-                
-
-                {/* Email Field */}
                 <div className="mx-auto max-w-xs">
                   <input
                     type="email"
                     name="email"
-                    value={email}
-                    onChange={this.handleChange}
+                    value={form.email}
+                    onChange={handleChange}
                     placeholder="Email"
                     className="w-full px-8 py-4 rounded-lg bg-gray-100 border border-gray-200 placeholder-gray-500 text-sm focus:outline-none focus:border-gray-400 focus:bg-white"
                   />
@@ -100,12 +106,11 @@ export default class LoginScreen extends Component {
                     <p className="text-red-500 text-xs mt-1">{error.email}</p>
                   )}
 
-                  {/* Password Field */}
                   <input
                     type="password"
                     name="password"
-                    value={password}
-                    onChange={this.handleChange}
+                    value={form.password}
+                    onChange={handleChange}
                     placeholder="Password"
                     className="w-full px-8 py-4 rounded-lg bg-gray-100 border border-gray-200 placeholder-gray-500 text-sm mt-5 focus:outline-none focus:border-gray-400 focus:bg-white"
                   />
@@ -113,9 +118,8 @@ export default class LoginScreen extends Component {
                     <p className="text-red-500 text-xs mt-1">{error.password}</p>
                   )}
 
-                  {/* Login Button */}
                   <button
-                    onClick={this.handleLogin}
+                    onClick={handleLogin}
                     className="mt-5 tracking-wide font-semibold bg-indigo-500 text-gray-100 w-full py-4 rounded-lg hover:bg-indigo-700 transition-all duration-300 ease-in-out flex items-center justify-center focus:shadow-outline focus:outline-none"
                   >
                     <svg
@@ -148,7 +152,6 @@ export default class LoginScreen extends Component {
             </div>
           </div>
 
-          {/* Right Side Illustration */}
           <div className="flex-1 bg-indigo-100 text-center hidden lg:flex">
             <div
               className="m-12 xl:m-16 w-full bg-contain bg-center bg-no-repeat"
@@ -160,36 +163,6 @@ export default class LoginScreen extends Component {
           </div>
         </div>
       </div>
-        {/* <div className='shadow-md p-4'> 
-          <div className='text-lg '>Register</div>
-          
-           <input
-            type="email"
-            name='email'
-            placeholder="Enter your email"
-            value={email}
-            onChange={this.handleChange}
-            className="w-full mb-4 px-3 py-2 border-b border-gray-400 focus:outline-none focus:border-blue-500"
-          />
-           {error.email && <p className="text-red-500 text-sm mb-3">{error.email}</p>}
-
-          
-          <input
-            type="password"
-            name='password'
-            value={password}
-            onChange={this.handleChange}
-            placeholder="Enter your password"
-            className="w-full mb-4 px-3 py-2 border-b border-gray-400 focus:outline-none focus:border-blue-500"
-          />
-          {error.password && <p className="text-red-500 text-sm mb-3">{error.password}</p>}
-
-        
-          <button onClick={this.handleLogin} className="w-full mt-2 bg-blue-500 text-white py-2 rounded hover:bg-blue-600 transition duration-300">
-            Login
-          </button>
-        </div> */}
-      </>
-    )
-  }
+    </>
+  );
 }
