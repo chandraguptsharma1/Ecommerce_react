@@ -10,7 +10,7 @@ export default function Registration() {
     password: "",
   });
   const [error, setError] = useState({});
-  const {setUser} = useAuth();
+  const { setUser } = useAuth();
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -50,30 +50,42 @@ export default function Registration() {
   };
 
   const handleRegistration = async () => {
-    if (Object.keys(error).length === 0 && form.name && form.email && form.password) {
+    if (
+      Object.keys(error).length === 0 &&
+      form.name &&
+      form.email &&
+      form.password
+    ) {
+      try {
+        const res = await axios.post(
+          "https://ecommerce-backend-6i0q.onrender.com/api/auth/register",
+          {
+            name: form.name,
+            email: form.email,
+            password: form.password,
+          },
+          { headers: { "Content-Type": "application/json" } }
+        );
 
-      try{
-        const res = await axios.post('http://localhost:5001/api/register',form);
-
-        setUser(res.data.user||res.data);
+        console.log("Post req", res);
+        setUser(res.data.user || res.data);
         Swal.fire({
           icon: "success",
           title: "Registration Successful",
           text: `Welcome, ${form.email}`,
         });
-      }catch(err){
+      } catch (err) {
         Swal.fire({
           icon: "error",
           title: "Registration Failed",
-          text: err?.response?.data?.message || 'Something went wrong!',
+          text: err?.response?.data?.message || "Something went wrong!",
         });
       }
-      
     } else {
       Swal.fire({
-        icon: 'error',
-        title: 'Validation Failed',
-        text: 'Please fix the errors before registering.'
+        icon: "error",
+        title: "Validation Failed",
+        text: "Please fix the errors before registering.",
       });
     }
   };
